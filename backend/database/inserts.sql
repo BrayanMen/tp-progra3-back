@@ -1,6 +1,6 @@
 INSERT INTO categories (name, description) VALUES
-("motherboard", "Tarjetas madre para PC")
-("graphic_card", "Tarjetas graficas para PC")
+("motherboard", "Tarjetas madre para PC"),
+("graphic_card", "Tarjetas graficas para PC"),
 ("processor", "Procesadores para PC");
 
 INSERT INTO products (name,url_image,description,  price,id_category,stock) VALUES 

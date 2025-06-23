@@ -1,11 +1,11 @@
 import mysql from 'mysql2/promise';
 import config from '../config/config.js';
-import path from 'path'
-import fs from 'fs'
-import {fileURLToPath} from 'url'
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const { db } = config;
 
@@ -17,31 +17,48 @@ const connection = mysql.createPool({
     waitForConnections: true,
 });
 
-const conectionInitialDatabase = async ()=>{
-    try{
-       const connectTemp = await mysql.createConnection({
+const conectionInitialDatabase = async () => {
+    try {
+        const connectTemp = await mysql.createConnection({
             host: db.host,
             user: db.user,
-            password:db.password,
+            password: db.password,
         });
 
         await connectTemp.query(`CREATE DATABASE IF NOT EXISTS ${db.name}`);
-        await connectTemp.query(`USE ${db.name}`);
+        await connectTemp.end();
 
-        const scriptSQL = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8')
-        await connectTemp.query(scriptSQL)
+        const connect = await connection.getConnection();
+
+        const scriptSQL = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+
+        const createsDbScript = scriptSQL
+            .split(';')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+        for (const ele of createsDbScript) {
+            await connect.query(ele);
+        }
 
         //Posiblemente condicionarlo a que solo insert los haga en Desarrollo
         if (config.env === 'development') {
             const insertsSQL = fs.readFileSync(path.join(__dirname, 'inserts.sql'), 'utf8');
-            await connectTemp.query(insertsSQL);
+            const inserts = insertsSQL
+                .split(';')
+                .map(s => s.trim())
+                .filter(Boolean);
+
+            for (const ele of inserts) {
+                await connect.query(ele);
+            }            
         }
         console.log('database initialized successfully...');
-        
-        
-    }catch(err){
-        console.error("Error de conexion de DB: ", err)       
+    } catch (err) {
+        console.error('Error de conexion de DB: ', err);
     }
-}
+};
 
-export  {connection, conectionInitialDatabase};
+conectionInitialDatabase();
+
+export { connection, conectionInitialDatabase };
