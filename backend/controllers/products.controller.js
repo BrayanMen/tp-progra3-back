@@ -1,4 +1,4 @@
-import connection from "../database/db.js"
+import {connection} from "../database/db.js"
 
 export const getProducts = async (req, res) =>{
     try {

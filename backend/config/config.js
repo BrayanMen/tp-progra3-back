@@ -1,18 +1,16 @@
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 const config = {
     port: process.env.PORT || 8080,
-    env: process.env.NODE_ENV,
+    env: process.env.NODE_ENV || 'development',
     db: {
-        host: process.env.DB_HOST,
-        name: process.env.DB_NAME,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD
-    }
-}
+        host: process.env.DB_HOST || 'localhost',
+        name: process.env.DB_NAME || 'testdb',
+        user: process.env.DB_USER || 'user',
+        password: process.env.DB_PASSWORD || 'password',
+    },
+};
 
-
-export default config
-
+export default config;
