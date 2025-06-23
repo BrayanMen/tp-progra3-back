@@ -33,9 +33,9 @@ const conectionInitialDatabase = async () => {
         const scriptSQL = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 
         const createsDbScript = scriptSQL
-            .split(';')
-            .map(s => s.trim())
-            .filter(Boolean);
+            .split(';')//Corto el array cada sentencia que termina
+            .map(s => s.trim())// limpio los espacios en blanco
+            .filter(Boolean);//solo me traigo las lineas que esten llenas 
 
         for (const ele of createsDbScript) {
             await connect.query(ele);
@@ -43,15 +43,21 @@ const conectionInitialDatabase = async () => {
 
         //Posiblemente condicionarlo a que solo insert los haga en Desarrollo
         if (config.env === 'development') {
-            const insertsSQL = fs.readFileSync(path.join(__dirname, 'inserts.sql'), 'utf8');
-            const inserts = insertsSQL
-                .split(';')
-                .map(s => s.trim())
-                .filter(Boolean);
-
-            for (const ele of inserts) {
-                await connect.query(ele);
-            }            
+            const [categories] = await connect.query("SELECT COUNT(*) AS total FROM categories")
+            //Reviso si la tabla de categories esta llena
+            // console.log(categories);           
+            if(categories[0].total === 0){//Si no esta llena cargo el script SQL 
+                const insertsSQL = fs.readFileSync(path.join(__dirname, 'inserts.sql'), 'utf8');
+                const inserts = insertsSQL
+                    .split(';') //Corto el array en cada sentencia que termina ;
+                    .map(s => s.trim()) // limpio los espacios en blanco
+                    .filter(Boolean);//solo me traigo las lineas que esten llenas 
+    
+                for (const ele of inserts) {
+                    await connect.query(ele);
+                }        
+            }
+            // console.log('Datos de insertados.');
         }
         console.log('database initialized successfully...');
     } catch (err) {
